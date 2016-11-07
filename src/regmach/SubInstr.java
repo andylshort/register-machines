@@ -12,6 +12,19 @@ public class SubInstr implements Instruction {
     this.trueLabel = trueLabel;
   }
 
+  
+  public int getRegisterIndex() {
+    return reg;
+  }
+  
+  public int getGreaterThanZeroLabel() {
+    return falseLabel;
+  }
+  
+  public int getNotGreaterThanZeroLabel() {
+    return trueLabel;
+  }
+  
   @Override
   public int execute(RegisterSet registers) {
     Register register = registers.getRegister(reg);

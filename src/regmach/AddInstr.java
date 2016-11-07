@@ -9,6 +9,14 @@ public class AddInstr implements Instruction {
     this.reg = reg;
     this.label = label;
   }
+  
+  public int getRegisterIndex() {
+    return reg;
+  }
+  
+  public int getNextLabel() {
+    return label;
+  }
 
   @Override
   public int execute(RegisterSet registers) {

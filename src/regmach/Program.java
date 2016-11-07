@@ -1,6 +1,7 @@
 package regmach;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +35,12 @@ public class Program {
     instructions.put(index, InstructionFactory.getInstruction(instr));
   }
   
+  public Map<Integer, Instruction> getInstructions() {
+    HashMap<Integer, Instruction> instrsCopy = 
+        new HashMap<Integer, Instruction>(instructions);
+    return Collections.unmodifiableMap(instrsCopy);
+  }
+  
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
@@ -48,20 +55,91 @@ public class Program {
     return sb.toString();
   }
   
-  /*/**
-   * Codes a program into its natural number value
-   * @param nums
-   * @return
-   *
-  public int code(List<Integer> nums) {
-    if (nums.size() == 0) {
+  @Override
+  public boolean equals(Object obj) {
+    
+    if (obj == null) return false;
+    
+    if (!Program.class.isAssignableFrom(obj.getClass())) return false;
+    
+    final Program p = (Program) obj;
+    
+    if (p.instructions == null) return false;
+    
+    return p.getInstructions().equals(this.instructions);
+  }
+  
+  @Override
+  public int hashCode() {
+    int hash = 17;
+    
+    hash = 31 * hash + instructions.hashCode();
+    
+    return hash;
+  }
+  
+  
+  
+  public int code() {
+    return codeSub(codeInstructions());
+    
+  }
+  
+  private int codeSub(List<Integer> codes) {
+    if (codes.size() == 0) {
       return 0;
-    } else {
-      Integer head = nums.get(0);
-      nums.remove(0);
-      return (int) (Math.pow(2, head)) * ((2 * code(nums)) + 1);
     }
-  }*/
+    else {
+      List<Integer> codesCopy = new ArrayList<Integer>(codes);
+      int code = codesCopy.remove(0);
+      
+      return doubleBracket(code, codeSub(codesCopy));
+    }
+  }
+  
+  
+  
+  private List<Integer> codeInstructions() {
+    List<Integer> codes = new ArrayList<Integer>();
+    
+    // Need to traverse items in order
+    for (int i = 0; i < instructions.size(); i++) {
+      Instruction instr = instructions.get(i);
+      
+      if (instr instanceof AddInstr) {
+        AddInstr ai = (AddInstr)instr;
+        
+        int ri = ai.getRegisterIndex();
+        int lj = ai.getNextLabel();
+        
+        codes.add(doubleBracket(2 * ri, lj));
+      }
+      else if (instr instanceof SubInstr) {
+        SubInstr si = (SubInstr)instr;
+        
+        int ri = si.getRegisterIndex();
+        int lj = si.getGreaterThanZeroLabel();
+        int lk = si.getNotGreaterThanZeroLabel();
+        
+        codes.add(doubleBracket((2 * ri) + 1, singleBracket(lj, lk)));
+      }
+      else if (instr instanceof HaltInstr) {
+        codes.add(0);
+      }
+    }
+    
+    return codes;
+  }
+  
+  
+  private int doubleBracket(int x, int y) {
+    return ((int)(Math.pow(2, x))) * ((2 * y) + 1);
+  }
+  
+  private int singleBracket(int x, int y) {
+    return ((int)(Math.pow(2, x))) * ((2 * y) + 1) - 1;
+  }
+  
   
   /**
    * Takes an input value and decodes it its representative program.
