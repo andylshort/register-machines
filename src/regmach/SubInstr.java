@@ -14,6 +14,9 @@ public class SubInstr implements Instruction {
 
   @Override
   public int execute() {
+    if (reg == null) {
+      System.out.println("OOPS!");
+    }
     boolean nonZero = reg.subtractOne();
     return (nonZero ? falseLabel : trueLabel);
   }

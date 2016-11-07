@@ -1,10 +1,5 @@
 package regmach;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,18 +26,20 @@ public class RegisterMachine {
   private Map<Integer, Register> regs;
   private Map<Integer, Instruction> instrs;
 
+  
   public RegisterMachine() {
     // Initialise registers and instructions structures
     this.regs = new HashMap<Integer, Register>();
     this.instrs = new HashMap<Integer, Instruction>();
   }
+  
 
   public void addRegister(int idx, Register reg) {
     regs.put(idx, reg);
   }
 
-  public void addInstruction(int idx, Instruction instr) {
-    instrs.put(idx, instr);
+  public void addInstruction(int idx, String instr) {
+    instrs.put(idx, InstructionFactory.getInstruction(this, instr));
   }
 
   public Instruction retrieveInstruction(int idx) {
@@ -52,121 +49,32 @@ public class RegisterMachine {
   public Set<Integer> instrKeySet() {
     return instrs.keySet();
   }
-
-  @SuppressWarnings("resource")
-  public static void main(String[] args) {
-
-    RegisterMachine rm = new RegisterMachine();
-
-    Map<Integer, String> lines = new HashMap<Integer, String>();
-
-    if (args.length != 1) {
-      System.out.println("NEED A FILE TO WORK");
-      System.exit(0);
-    }
-
-    BufferedReader fbr = null;
-    try {
-      fbr = new BufferedReader(new FileReader(args[0]));
-
-      String line = "";
-
-      while ((line = fbr.readLine()) != null) {
-        Integer index = Integer.parseInt(line.split(":\\s*")[0]);
-        String instr = line.split(":\\s*")[1];
-
-        lines.put(index, instr);
-      }
-    } catch (FileNotFoundException e1) {
-      e1.printStackTrace();
-    } catch (IOException e1) {
-      e1.printStackTrace();
-    }
-
-    System.out.println("Enter initial configuration:");
-
-    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-    String initialConfig = "";
-
-    try {
-      initialConfig = br.readLine();
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-
-    String[] regValues = initialConfig.split(" ");
-
-    for (int i = 0; i < regValues.length; i++) {
-      int value = Integer.parseInt(regValues[i]);
-      rm.addRegister(i, new Register(value));
-    }
-
-    System.out.println();
-
-    for (Map.Entry<Integer, String> entry : lines.entrySet()) {
-      int label = entry.getKey();
-      String instr = entry.getValue();
-
-      Instruction instruction = rm.convertToInstruction(instr);
-
-      rm.addInstruction(label, instruction);
-    }
-
+  
+  public Register getRegister(int index) {
+    return regs.get(index);
+  }
+  
+  
+  public void runProgram() {
     /* Run program */
     int currentInstr = 0;
 
     while (true) {
-      Instruction instr = rm.retrieveInstruction(currentInstr);
+      Instruction instr = instrs.get(currentInstr);
       int returnValue = instr.execute();
 
-      if (returnValue == -1 || returnValue > Collections.max(rm.instrKeySet())) {
-        /*
-         * We've hit a halting configuration: either halt, not an instr, or
-         * pointing to erroneous halting instr - so we halt/exit
-         */
-        System.exit(0);
+      if (returnValue == -1 || returnValue > instrs.size()) {
+        // We've hit a halting configuration: either halt, not an instr, or
+        // pointing to erroneous halting instr - so we halt/exit
+        break;
       }
 
       currentInstr = returnValue;
-      rm.printConfig(currentInstr);
+      printConfig(currentInstr);
     }
   }
 
-  public Instruction convertToInstruction(String s) {
-    Matcher addMatch = addPat.matcher(s);
-    Matcher subMatch = subPat.matcher(s);
-    Matcher haltMatch = haltPat.matcher(s);
-
-    if (addMatch.find() && !s.contains(",")) {
-      String[] parts = s.split("\\s*->\\s*");
-
-      int reg = Integer.parseInt(parts[0]);
-      Register register = regs.get(reg);
-
-      int label = Integer.parseInt(parts[1]);
-
-      return new AddInstr(register, label);
-    } else if (subMatch.find() && s.contains(",")) {
-      String[] parts = s.split("\\s*->\\s*");
-      String[] labels = parts[1].split(",\\s*");
-
-      int reg = Integer.parseInt(parts[0]);
-      Register register = regs.get(reg);
-
-      /*
-       * False = able to subtract one True = reg value is zero
-       */
-      int falseLabel = Integer.parseInt(labels[0]);
-      int trueLabel = Integer.parseInt(labels[1]);
-
-      return new SubInstr(register, falseLabel, trueLabel);
-    } else if (haltMatch.find()) {
-      return new HaltInstr();
-    } else {
-      return new NullInstr();
-    }
-  }
+  
 
   public void printConfig(int idx) {
     System.out.print(idx + ": ");
