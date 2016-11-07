@@ -15,13 +15,7 @@ public class Register {
   public void addOne() {
     value += 1;
   }
-
-  /***
-   * Subtracts one from the register's value.
-   * 
-   * @return True if non-zero value and value subtracted 1. False if register
-   *         value is zero.
-   */
+  
   public boolean subtractOne() {
     if (isZero()) {
       return false;
@@ -33,5 +27,10 @@ public class Register {
 
   public boolean isZero() {
     return value == 0;
+  }
+  
+  @Override
+  public String toString() {
+    return Integer.toString(value);
   }
 }

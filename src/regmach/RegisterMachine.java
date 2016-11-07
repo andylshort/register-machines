@@ -5,58 +5,31 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RegisterMachine {
 
-  /*
-   * Regexes n: x -> y ----> (\d:\s*\d\s*->\s*\d)[^,] n: x -> y, z ---->
-   * (\d:\s*\d\s*->\s*\d,\s*\d) HALT ----> HALT
-   */
-  private static final String addPattern = "(\\d\\s*->\\s*\\d)";
-  private static final String subPattern = "(\\d\\s*->\\s*\\d,\\s*\\d)";
-  private static final String haltPattern = "HALT";
-
-  private static Pattern addPat = Pattern.compile(addPattern);
-  private static Pattern subPat = Pattern.compile(subPattern);
-  private static Pattern haltPat = Pattern.compile(haltPattern);
-
-  private Map<Integer, Register> regs;
+  private RegisterSet registers;
   private Map<Integer, Instruction> instrs;
-
   
-  public RegisterMachine() {
+  public RegisterMachine(RegisterSet registers) {
     // Initialise registers and instructions structures
-    this.regs = new HashMap<Integer, Register>();
+    this.registers = registers;
     this.instrs = new HashMap<Integer, Instruction>();
   }
   
 
-  public void addRegister(int idx, Register reg) {
-    regs.put(idx, reg);
-  }
-
   public void addInstruction(int idx, String instr) {
     instrs.put(idx, InstructionFactory.getInstruction(this, instr));
   }
-
-  public Instruction retrieveInstruction(int idx) {
-    return instrs.get(idx);
-  }
-
-  public Set<Integer> instrKeySet() {
-    return instrs.keySet();
-  }
   
   public Register getRegister(int index) {
-    return regs.get(index);
+    return registers.getRegister(index);
   }
   
   
-  public void runProgram() {
-    /* Run program */
+  public void runProgram(RegisterSet registers) {
     int currentInstr = 0;
 
     while (true) {
@@ -70,24 +43,10 @@ public class RegisterMachine {
       }
 
       currentInstr = returnValue;
-      printConfig(currentInstr);
+      System.out.println(currentInstr + ": " + registers.toString());
     }
   }
-
   
-
-  public void printConfig(int idx) {
-    System.out.print(idx + ": ");
-    printRegs(regs);
-  }
-
-  private static void printRegs(Map<Integer, Register> regs) {
-    for (Map.Entry<Integer, Register> entry : regs.entrySet()) {
-      Register reg = entry.getValue();
-      System.out.print(reg.getValue() + " ");
-    }
-    System.out.println();
-  }
 
   public static List<Integer> decompose(int num) {
     String binary = Integer.toBinaryString(num);
