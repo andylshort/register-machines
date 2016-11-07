@@ -2,17 +2,23 @@ package regmach;
 
 public class AddInstr implements Instruction {
 
-  private Register reg;
+  private int reg;
   private int label;
 
-  public AddInstr(Register reg, int label) {
+  public AddInstr(int reg, int label) {
     this.reg = reg;
     this.label = label;
   }
 
   @Override
-  public int execute() {
-    reg.addOne();
+  public int execute(RegisterSet registers) {
+    Register register = registers.getRegister(reg);
+    register.addOne();
     return label;
+  }
+  
+  @Override
+  public String toString() {
+    return reg + " -> " + label;
   }
 }

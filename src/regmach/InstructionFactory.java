@@ -20,7 +20,7 @@ public class InstructionFactory {
   private static Pattern haltPat = Pattern.compile(haltPattern);
   
   
-  public static Instruction getInstruction(RegisterMachine rm, String instruction) {
+  public static Instruction getInstruction(String instruction) {
     
     instruction = instruction.trim().replaceAll("\\s", "");
     
@@ -33,24 +33,22 @@ public class InstructionFactory {
       String[] parts = instruction.split("->");
 
       int reg = Integer.parseInt(parts[0]);
-      Register register = rm.getRegister(reg);
 
       int label = Integer.parseInt(parts[1]);
 
-      return new AddInstr(register, label);
+      return new AddInstr(reg, label);
     }
     else if (subMatcher.find()) {
       String[] parts = instruction.split("->");
       String[] labels = parts[1].split(",");
 
       int reg = Integer.parseInt(parts[0]);
-      Register register = rm.getRegister(reg);
 
       // False = able to subtract one True = reg value is zero
       int falseLabel = Integer.parseInt(labels[0]);
       int trueLabel = Integer.parseInt(labels[1]);
 
-      return new SubInstr(register, falseLabel, trueLabel);
+      return new SubInstr(reg, falseLabel, trueLabel);
     }
     else if (haltMatcher.find()) {
       return new HaltInstr();
