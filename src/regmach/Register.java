@@ -3,10 +3,12 @@ package regmach;
 public class Register {
 
   private int value;
+  
 
   public Register(int value) {
     this.value = value;
   }
+  
 
   public int getValue() {
     return value;
@@ -15,13 +17,7 @@ public class Register {
   public void addOne() {
     value += 1;
   }
-
-  /***
-   * Subtracts one from the register's value.
-   * 
-   * @return True if non-zero value and value subtracted 1. False if register
-   *         value is zero.
-   */
+  
   public boolean subtractOne() {
     if (isZero()) {
       return false;
@@ -33,5 +29,36 @@ public class Register {
 
   public boolean isZero() {
     return value == 0;
+  }
+  
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    
+    if (!Register.class.isAssignableFrom(obj.getClass())) {
+      return false;
+    }
+    
+    Register r = (Register)obj;
+    if (this == r) {
+      return true;
+    }
+    
+    return this.value == r.value;
+  }
+  
+  @Override
+  public int hashCode() {
+    int hash = 17;
+    hash = 31 * hash + this.value;
+    return hash;
+  }
+  
+  @Override
+  public String toString() {
+    return Integer.toString(value);
   }
 }
