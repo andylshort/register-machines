@@ -1,5 +1,5 @@
 package regmach;
 
-public interface Instruction {  
-  int execute(RegisterSet registers);
+public interface Instruction {
+  int execute(Register register);
 }

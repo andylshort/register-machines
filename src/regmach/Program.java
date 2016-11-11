@@ -1,7 +1,6 @@
 package regmach;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,9 +10,11 @@ import java.util.regex.Pattern;
 
 public class Program {
 
-  private Map<Integer, Instruction> instructions;
+  private HashMap<Integer, Instruction> instructions;
 
-  
+  /*
+   * Constructors
+   */
   public Program() {
     this.instructions = new HashMap<Integer, Instruction>();
   }
@@ -23,22 +24,69 @@ public class Program {
   }
   
   
+  /*
+   * Accessors
+   */
   public int length() {
     return instructions.size();
   }
 
+  
+  /*
+   * Instruction-centric Methods
+   */
   public Instruction getInstruction(int index) {
     return instructions.get(index);
-  }
-
-  public void put(Integer index, String instr) {
-    instructions.put(index, InstructionFactory.getInstruction(instr));
   }
   
   public Map<Integer, Instruction> getInstructions() {
     HashMap<Integer, Instruction> instrsCopy = 
         new HashMap<Integer, Instruction>(instructions);
     return Collections.unmodifiableMap(instrsCopy);
+  }
+
+  public void putInstruction(Integer index, String instr) {
+    instructions.put(index, InstructionFactory.getInstruction(instr));
+  }
+  
+  public boolean containsInstructionLabel(int label) {
+    return instructions.containsKey(label);
+  }
+  
+  
+  @Override
+  public boolean equals(Object obj) {    
+    if (obj == null) {
+      return false;
+    }
+    
+    if (!Program.class.isAssignableFrom(obj.getClass())) {
+      return false;
+    }
+    
+    final Program p = (Program) obj;
+    if (this == p) {
+      return true;
+    }
+    
+    if (p.instructions == null) {
+      return false;
+    }
+    
+    if (!this.instructions.keySet().equals(p.instructions.keySet())) {
+      return false;
+    }
+    
+    return true;
+  }
+  
+  @Override
+  public int hashCode() {
+    int hash = 17;
+    
+    hash = 31 * hash + instructions.hashCode();
+    
+    return hash;
   }
   
   @Override
@@ -55,34 +103,21 @@ public class Program {
     return sb.toString();
   }
   
-  @Override
-  public boolean equals(Object obj) {
-    
-    if (obj == null) return false;
-    
-    if (!Program.class.isAssignableFrom(obj.getClass())) return false;
-    
-    final Program p = (Program) obj;
-    
-    if (p.instructions == null) return false;
-    
-    return p.getInstructions().equals(this.instructions);
-  }
   
-  @Override
-  public int hashCode() {
-    int hash = 17;
-    
-    hash = 31 * hash + instructions.hashCode();
-    
-    return hash;
-  }
+  /*
+   * Coding and decoding of register machine programs.
+   * 
+   * For help, consult:
+   * https://www.doc.ic.ac.uk/~pg/Concurrency/lecture6.pdf
+   * https://www.cl.cam.ac.uk/teaching/1011/CompTheory/comt-notes.pdf
+   */
   
-  
-  
+  /**
+   * Returns the Godel numbering/coding of the current program.
+   * @return the coded program.
+   */
   public int code() {
     return codeSub(codeInstructions());
-    
   }
   
   private int codeSub(List<Integer> codes) {
@@ -97,12 +132,13 @@ public class Program {
     }
   }
   
-  
-  
   private List<Integer> codeInstructions() {
     List<Integer> codes = new ArrayList<Integer>();
     
-    // Need to traverse items in order
+    /*
+     * Traverse instructions in label-order and code based on the
+     * type of instruction
+     */
     for (int i = 0; i < instructions.size(); i++) {
       Instruction instr = instructions.get(i);
       
@@ -144,7 +180,7 @@ public class Program {
   /**
    * Takes an input value and decodes it its representative program.
    * @param value
-   * @return
+   * @return Program
    */
   public static Program fromValue(int value) {
     List<Integer> ints = decompose(value);

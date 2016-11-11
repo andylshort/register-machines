@@ -6,15 +6,22 @@ import java.util.Scanner;
 
 public class MainProgram {
 
-  @SuppressWarnings("resource")
   public static void main(String[] args) {
+    RegisterSet registers = loadInitialRegisterSet();
+    Program program = loadProgramFromFile(args[0]);
+    
+    // Execute the program with the initial configuration    
+    RegisterMachine rm = new RegisterMachine(registers);
+    rm.runProgram(program);
+  }
+  
+  @SuppressWarnings("resource")
+  private static RegisterSet loadInitialRegisterSet() {
+    RegisterSet initialConfiguration = new RegisterSet();    
+    
+    // Load the registers first with an initial configuration
+    System.out.println("Enter initial, space-separated configuration:");
 
-    RegisterSet registers = new RegisterSet();
-    Program program = new Program();
-    
-    // Previous Error: Need to load registers before program/instructions referenced.
-    System.out.println("Enter initial configuration:");
-    
     Scanner input = new Scanner(System.in);
     String initialConfig = input.nextLine();
 
@@ -22,23 +29,29 @@ public class MainProgram {
 
     for (int i = 0; i < regValues.length; i++) {
       int value = Integer.parseInt(regValues[i]);
-      System.out.println(value);
-      registers.addRegister(value);
+      initialConfiguration.addRegister(value);
     }
-
-    System.out.println();
     
-
-    RegisterMachine rm = new RegisterMachine();
+    if (initialConfiguration.registerCount() < 1) {
+      throw new RuntimeException("At least 1 register must be specified.");
+    }
+    return initialConfiguration;    
+  }
+  
+  @SuppressWarnings("resource")
+  private static Program loadProgramFromFile(String filePath) {
+    Program program = new Program();
     
-
-    if (args.length != 1) {
-      System.out.println("NEED A FILE TO WORK");
+    // Load program in from file
+    if (filePath == null || filePath.isEmpty()) {
+      System.err.println("No input file.");
       System.exit(0);
     }
     
+    // Can do extra checks here: file exists etc...
+    
     try {
-      Scanner fileInput = new Scanner(new File(args[0]));
+      Scanner fileInput = new Scanner(new File(filePath));
       
       while (fileInput.hasNextLine()) {
         String currentLine = fileInput.nextLine();
@@ -46,16 +59,13 @@ public class MainProgram {
         Integer index = Integer.parseInt(currentLine.split(":\\s*")[0]);
         String instr = currentLine.split(":\\s*")[1];
         
-        program.put(index, instr);
-      }
-      
+        program.putInstruction(index, instr);
+      }      
     } catch (FileNotFoundException e) {
       e.printStackTrace();
     }
     
-    rm.runProgram(registers, program);
-    
-    System.out.println("Halted.");
+    return program;
   }
   
 }

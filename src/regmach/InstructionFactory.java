@@ -4,6 +4,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class InstructionFactory {
+  
+  /*
+   * TODO: Is this the concern of parsing the instruction in the Factory, or
+   * in the instructions themselves? Having such similar patterns (Pattern,
+   * Matcher, find, process) seems like there should just be a regex
+   * lookup in a dictionary to classes, and to return the parsed instruction.
+   */
 
   /*
    * Regexes
@@ -20,39 +27,36 @@ public class InstructionFactory {
   private static Pattern haltPat = Pattern.compile(haltPattern);
   
   
-  public static Instruction getInstruction(String instruction) {
-    
+  public static Instruction getInstruction(String instruction) {    
     instruction = instruction.trim().replaceAll("\\s", "");
     
+    // Identify which instruction type it is and process accordingly
     Matcher addMatcher  = addPat.matcher(instruction);
     Matcher subMatcher  = subPat.matcher(instruction);
     Matcher haltMatcher = haltPat.matcher(instruction);
-    
     
     if (addMatcher.find()) {
       String[] parts = instruction.split("->");
 
       int reg = Integer.parseInt(parts[0]);
-
       int label = Integer.parseInt(parts[1]);
 
       return new AddInstr(reg, label);
-    }
+    }    
     else if (subMatcher.find()) {
       String[] parts = instruction.split("->");
       String[] labels = parts[1].split(",");
 
       int reg = Integer.parseInt(parts[0]);
 
-      // False = able to subtract one True = reg value is zero
       int falseLabel = Integer.parseInt(labels[0]);
       int trueLabel = Integer.parseInt(labels[1]);
 
       return new SubInstr(reg, falseLabel, trueLabel);
-    }
+    }    
     else if (haltMatcher.find()) {
       return new HaltInstr();
-    }
+    }    
     else {
       return new NullInstr();
     }    
